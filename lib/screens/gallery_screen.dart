@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
@@ -360,79 +361,7 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
     await _loadPhotos();
   }
 
-  void _showFolderMenu(String folderPath, List<Photo> folderPhotos) {
-    final folderName = folderPath.split('/').last;
-    showModalBottomSheet(
-      context: context,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey, width: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: Image.file(
-                      File(folderPhotos.first.path),
-                      width: 48,
-                      height: 48,
-                      fit: BoxFit.cover,
-                      cacheWidth: 96,
-                      errorBuilder: (_, _, _) => const Icon(Icons.folder, size: 48),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(folderName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                        Text('${folderPhotos.length} 张图片', style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.cloud_upload),
-              title: const Text('云端解析此文件夹'),
-              subtitle: const Text('将文件夹内所有图片发送到云端生成标签'),
-              onTap: () {
-                Navigator.pop(context);
-                _cloudAnalyzeFolder(folderPath, folderPhotos);
-              },
-            ),
-            Consumer<CloudEnhanceService>(
-              builder: (_, cloud, _) {
-                final excluded = cloud.isFolderExcluded(folderPath);
-                return ListTile(
-                  leading: Icon(excluded ? Icons.visibility : Icons.visibility_off),
-                  title: Text(excluded ? '显示此文件夹' : '隐藏此文件夹'),
-                  subtitle: Text(excluded ? '重新在主页面显示' : '不在主页显示，也不参与云端解析'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    if (excluded) {
-                      await cloud.removeExcludedFolder(folderPath);
-                    } else {
-                      await cloud.addExcludedFolder(folderPath);
-                    }
-                    await _loadPhotos();
-                  },
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  
 
   bool _isParsed(Photo p) => p.tags != null && p.tags!.isNotEmpty;
 
@@ -518,55 +447,7 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
     await _loadPhotos();
   }
 
-  Future<void> _cloudAnalyzeFolder(String folderPath, List<Photo> folderPhotos) async {
-    final cloudService = context.read<CloudEnhanceService>();
-    if (!cloudService.isEnabled) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('请先在设置中启用云端解析并填入 API Key')),
-        );
-      }
-      return;
-    }
-    final unparsed = folderPhotos.where((p) => !_isParsed(p)).toList();
-    final List<Photo> toAnalyze;
-    if (unparsed.isEmpty) {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('重新解析'),
-          content: const Text('该文件夹图片均已解析过，是否重新解析？'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
-            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('确认')),
-          ],
-        ),
-      );
-      if (confirmed != true) return;
-      toAnalyze = folderPhotos;
-    } else {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('云端解析'),
-          content: Text('将通过第三方 API 为 ${unparsed.length} 张未解析的图片生成标签，是否继续？'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
-            TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('开始解析')),
-          ],
-        ),
-      );
-      if (confirmed != true) return;
-      toAnalyze = unparsed;
-    }
-    final msg = await _scanner.cloudAnalyzePhotos(toAnalyze);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
-    }
-    await _loadPhotos();
-  }
+  
 
   Future<void> _cloudAnalyzeSelected() async {
     final cloudService = context.read<CloudEnhanceService>();
@@ -1100,7 +981,7 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
               onRefresh: _loadPhotos,
               child: CustomScrollView(
                 controller: _photoGridScrollCtrl,
-                cacheExtent: 800,
+                scrollCacheExtent: const ScrollCacheExtent.pixels(800),
                 slivers: [
                   SliverList(
                     delegate: SliverChildBuilderDelegate(

@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -225,7 +225,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showPromptEditorDialog(CloudEnhanceService cloud) {
+    void _showPromptEditorDialog(CloudEnhanceService cloud) {
     final controller = TextEditingController(text: cloud.effectivePrompt);
     showDialog(
       context: context,
@@ -233,8 +233,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (ctx, setDialogState) {
           return AlertDialog(
             title: const Text('编辑分析提示词'),
-            content: SizedBox(
-              width: double.maxFinite,
+            content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,10 +245,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: controller,
+                    minLines: 8,
                     maxLines: 12,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       hintText: '输入自定义提示词...',
+                      isDense: true,
+                      contentPadding: EdgeInsets.all(12),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -257,32 +259,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     '当前字数：${controller.text.length}',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
+                        onPressed: () {
+                          controller.text = cloud.defaultPrompt;
+                          setDialogState(() {});
+                        },
+                        child: const Text('重置为默认'),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('取消'),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                            ),
+                            onPressed: () async {
+                              await cloud.setCustomPrompt(controller.text.trim());
+                              if (mounted) {
+                                setState(() {});
+                                Navigator.pop(context);
+                              }
+                            },
+                            child: const Text('保存'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('取消'),
-              ),
-              OutlinedButton(
-                onPressed: () {
-                  controller.text = cloud.defaultPrompt;
-                  setDialogState(() {});
-                },
-                child: const Text('重置为默认'),
-              ),
-              FilledButton(
-                onPressed: () async {
-                  await cloud.setCustomPrompt(controller.text.trim());
-                  if (mounted) {
-                    setState(() {});
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text('保存'),
-              ),
-            ],
           );
         },
       ),
@@ -1309,3 +1334,4 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
+

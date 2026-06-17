@@ -278,6 +278,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
         }
 
         await File(destPath).writeAsBytes(await src.readAsBytes());
+        if (!mounted) return;
         final uri = await context.read<PhotoScanner>().scanFile(destPath);
         _tempShareCopied.add(_TempShareEntry(destPath, uri));
         copied++;
@@ -287,6 +288,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
       }
     }
 
+    if (!mounted) return;
     final durSec = context.read<CloudEnhanceService>().tempShareDurationSec;
     _exitSelect();
     if (mounted) {
@@ -318,6 +320,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
           final f = File(entry.path);
           if (await f.exists()) {
             await f.delete();
+            if (!mounted) return;
             context.read<PhotoScanner>().removeFromMediaStore(entry.path);
           }
         }

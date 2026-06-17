@@ -25,13 +25,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _debugUnlocked = false;
   int _debugTapCount = 0;
   List<String> _allFolders = [];
-  int _modelCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadStats();
-    _modelCount = context.read<CloudEnhanceService>().models.length;
     SharedPreferences.getInstance().then((prefs) {
       if (mounted) {
         setState(() => _debugUnlocked = prefs.getBool('debug_unlocked') ?? false);
@@ -505,7 +503,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             Consumer<LogService>(
-              builder: (_, logService, __) => SwitchListTile(
+              builder: (_, logService, _) => SwitchListTile(
                 secondary: const Icon(Icons.receipt_long),
                 title: const Text('启用应用日志'),
                 subtitle: const Text('记录应用运行日志到本地文件，包含所有模块'),
@@ -520,7 +518,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               leading: const Icon(Icons.receipt_long),
               title: const Text('应用日志'),
               subtitle: Consumer<LogService>(
-                builder: (_, logService, __) {
+                builder: (_, logService, _) {
                   final total = logService.entries.length;
                   final errors = logService.entries
                       .where((e) => e.level == LogLevel.error).length;
@@ -637,7 +635,6 @@ class _ModelConfigCardState extends State<_ModelConfigCard> {
   @override
   Widget build(BuildContext context) {
     final cloud = context.read<CloudEnhanceService>();
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -831,7 +828,7 @@ class _DebugLogsScreen extends StatelessWidget {
             )
           : ListView.separated(
               itemCount: cloud.failureLogs.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final entry = cloud.failureLogs[index];
                 return _DebugLogEntryCard(entry: entry);

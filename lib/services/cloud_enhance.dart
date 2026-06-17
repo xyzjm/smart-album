@@ -371,7 +371,7 @@ class CloudEnhanceService {
               modelName: cfg.modelName,
               httpStatusCode: 200,
               responseBody: _truncate(lastResponseBody, 500),
-              rawAIResponse: _truncate(rawContent!, 1000),
+              rawAIResponse: _truncate(rawContent, 1000),
               parsedTags: result['tags'],
               errorMessage: '',
             ));
@@ -435,7 +435,7 @@ class CloudEnhanceService {
     await Future.wait(enabled.asMap().entries.map((entry) async {
       final idx = entry.key;
       final model = entry.value;
-      for (final path in queues[idx]!) {
+      for (final path in queues[idx]) {
         results[path] = await analyzeImage(path, model: model);
       }
     }));

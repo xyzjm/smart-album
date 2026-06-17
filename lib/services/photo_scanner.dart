@@ -431,7 +431,7 @@ class PhotoScanner {
 
     await notify.showCompleted(
       id: 0,
-      title: '${title}完成',
+      title: '$title完成',
       body: body,
       channelId: NotificationService.cloudChannelId,
       channelName: '云端解析',

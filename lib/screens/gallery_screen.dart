@@ -410,7 +410,7 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
               },
             ),
             Consumer<CloudEnhanceService>(
-              builder: (_, cloud, __) {
+              builder: (_, cloud, _) {
                 final excluded = cloud.isFolderExcluded(folderPath);
                 return ListTile(
                   leading: Icon(excluded ? Icons.visibility : Icons.visibility_off),
@@ -1492,6 +1492,7 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
       }
     }
 
+    if (!mounted) return;
     final durSec = context.read<CloudEnhanceService>().tempShareDurationSec;
     _exitSelect();
     if (mounted) {
@@ -1559,6 +1560,7 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
       return;
     }
     final count = _selectedIds.length;
+    if (!mounted) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -1760,7 +1762,6 @@ class _QuickTagScreen extends StatefulWidget {
 class _QuickTagScreenState extends State<_QuickTagScreen> {
   final _tagCtrl = TextEditingController();
   final _selectedIds = <int>{};
-  bool _applied = false;
 
   @override
   void dispose() {
@@ -1801,7 +1802,6 @@ class _QuickTagScreenState extends State<_QuickTagScreen> {
     }
 
     setState(() {
-      _applied = true;
       _selectedIds.clear();
     });
 
